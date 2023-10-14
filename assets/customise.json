@@ -1,0 +1,55 @@
+{
+    "personalise" : {
+        "fr" : "Commençons par customiser votre expérience."
+    },
+    "interests" : {
+        "fr": "Veuillez sélectionner vos intérêts :"
+    },
+    "interestsList": [
+        {
+            "fr": "Suisse"
+        },
+        {
+            "fr": "Monde"
+        },
+        {
+            "fr": "Politique"
+        },
+        {
+            "fr": "Économie"
+        },
+        {
+            "fr": "Science"
+        },
+        {
+            "fr": "Technologie"
+        },
+        {
+            "fr": "Sport"
+        },
+        {
+            "fr": "Genève"
+        },
+        {
+            "fr": "Vaud"
+        },
+        {
+            "fr": "Fribourg"
+        },
+        {
+            "fr": "Neuchâtel"
+        },
+        {
+            "fr": "Valais"
+        },
+        {
+            "fr": "Jura"
+        },
+        {
+            "fr": "Berne"
+        }
+    ],
+    "next": {
+        "fr": "C'est parti !"
+    }
+}

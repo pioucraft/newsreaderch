@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import "login.dart";
+import 'customise.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
@@ -16,11 +16,11 @@ class SelectLanguage extends StatefulWidget {
 
 class _SelectLanguageState extends State<SelectLanguage> {
   var listOfWelcomeTexts = [
-    "Hello, please select your language to continue.            ‎",
-    "Hallo, bitte wählen Sie Ihre Sprache um fortzufahren.      ‎",
-    "Bonjour, veuillez sélectionner votre langue pour continuer.‎",
-    "Salve, selezionare la lingua per continuare.               ‎",
-    "Hallo, eleger Vossa lingua per cuntinuar.                  ‎"
+    "Hello, please select your language to continue.",
+    "Hallo, bitte wählen Sie Ihre Sprache um fortzufahren.",
+    "Bonjour, veuillez sélectionner votre langue pour continuer.",
+    "Salve, selezionare la lingua per continuare.",
+    "Hallo, eleger Vossa lingua per cuntinuar."
   ];
   var selectedWelcomeTextNumber = 0;
   var _selectedWelcomeText =
@@ -62,7 +62,8 @@ class _SelectLanguageState extends State<SelectLanguage> {
               padding: const EdgeInsets.fromLTRB(16.0, 160.0, 16.0, 0), child: 
               AnimatedSwitcher(duration: const Duration(milliseconds: 500), child: 
                 Text(
-                  _selectedWelcomeText,
+                  _selectedWelcomeText+"\n",
+                  maxLines: 2,
                   key: ValueKey<int>(selectedWelcomeTextNumber),
                   style: const TextStyle(fontSize: 24),
                   textAlign: TextAlign.center,
@@ -89,7 +90,7 @@ class _SelectLanguageState extends State<SelectLanguage> {
                       await prefs.setString('language', selectedLanguage);
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => Login(title: "Créer un compte",)),
+                        MaterialPageRoute(builder: (context) => Customise(title: "Customisez votre expérience",)),
                       );
                     },
                   child: const Text("Fr")
@@ -114,14 +115,8 @@ class _SelectLanguageState extends State<SelectLanguage> {
                 Padding(padding: const EdgeInsets.all(5.0), child: 
                 
                   ElevatedButton(
-                    onPressed: () async { 
-                      const selectedLanguage = "en";
-                      final SharedPreferences prefs = await SharedPreferences.getInstance();
-                      await prefs.setString('language', selectedLanguage);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => Login(title: "Create an account",)),
-                      );
+                    onPressed: () { 
+                      alert(context, "Error", "English is not yet available.");
                     },
                   child: const Text("En")
                   ),
