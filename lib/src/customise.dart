@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:async';
 
+import "homePage.dart";
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,7 +19,7 @@ class Customise extends StatefulWidget {
 class _CustomiseState extends State<Customise> {
   Map<String, dynamic> jsonData = {};
   String? language;
-  List<bool> userInterests = [false, false, false, false, false, false, false, false, false, false, false, false, false, false];
+  List<bool> userInterests = [ false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false];
 
   @override
   void initState() {
@@ -87,13 +89,13 @@ class _CustomiseState extends State<Customise> {
                   ElevatedButton(onPressed: () async { 
                     final SharedPreferences prefs = await SharedPreferences.getInstance();
                     await prefs.setString('interests', userInterests.toString());
-                    String inputString = await prefs.getString("interests")!;
-                    List<dynamic> parsedList = jsonDecode(inputString!);
+                    String inputString = prefs.getString("interests")!;
+                    List<dynamic> parsedList = jsonDecode(inputString);
                     List<bool> boolList = parsedList.map((value) => value as bool).toList();
                     print(boolList);
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (context) => Customise(title: "bababoi")),
+                      MaterialPageRoute(builder: (context) => const HomePage()),
                       (Route<dynamic> route) => false,
                     );
                   }, child: Text(jsonData["next"][language]))

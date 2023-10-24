@@ -13,9 +13,6 @@
             "fr": "Monde"
         },
         {
-            "fr": "Politique"
-        },
-        {
             "fr": "Économie"
         },
         {
@@ -47,6 +44,18 @@
         },
         {
             "fr": "Berne"
+        },
+        {
+            "fr": "Culture"
+        },
+        {
+            "fr": "Opinions"
+        },
+        {
+            "fr": "Bien vivre"
+        },
+        {
+            "fr": "Nouriture"
         }
     ],
     "next": {

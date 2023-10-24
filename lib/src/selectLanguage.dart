@@ -62,7 +62,7 @@ class _SelectLanguageState extends State<SelectLanguage> {
               padding: const EdgeInsets.fromLTRB(16.0, 160.0, 16.0, 0), child: 
               AnimatedSwitcher(duration: const Duration(milliseconds: 500), child: 
                 Text(
-                  _selectedWelcomeText+"\n",
+                  "$_selectedWelcomeText\n",
                   maxLines: 2,
                   key: ValueKey<int>(selectedWelcomeTextNumber),
                   style: const TextStyle(fontSize: 24),
@@ -90,7 +90,7 @@ class _SelectLanguageState extends State<SelectLanguage> {
                       await prefs.setString('language', selectedLanguage);
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => Customise(title: "Customisez votre expérience",)),
+                        MaterialPageRoute(builder: (context) => const Customise(title: "Customisez votre expérience",)),
                       );
                     },
                   child: const Text("Fr")
