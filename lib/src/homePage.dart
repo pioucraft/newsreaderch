@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:dart_rss/dart_rss.dart';  
@@ -12,6 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -100,7 +102,7 @@ class _HomePageState extends State<HomePage> {
               Padding(padding: const EdgeInsets.all(16.0), child: 
                 Text(jsonData["welcome"][language]!, style: const TextStyle(fontSize: 20.0), textAlign: TextAlign.center)
               ),
-              if(isRSSLoaded) Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              if(isRSSLoaded) /*Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 for(var item in finalFeed) Padding(padding: const EdgeInsets.all(16.0),child: 
                   ElevatedButton(onPressed: () => {_launchUrl(Uri.parse(item["link"]))}, style: ElevatedButton.styleFrom(foregroundColor: Colors.black, shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.only(
@@ -115,7 +117,11 @@ class _HomePageState extends State<HomePage> {
                         Text(item["title"], style: const TextStyle(fontSize: 18.0), textAlign: TextAlign.left),
                         Text("${item['newspaper']} | Date : ${item['localDate'].toString().split(".000")[0]}"),
                         Padding(padding: const EdgeInsets.only(top: 5.0, bottom: 5.0), child: 
-                          Image.network(item["image"])
+                          CachedNetworkImage(
+                              imageUrl: item["image"],
+                              placeholder: (context, url) => CircularProgressIndicator(),
+                              errorWidget: (context, url, error) => Icon(Icons.error),
+                            )
                         ),
                         Text(item["description"]),
                       ])
@@ -124,7 +130,39 @@ class _HomePageState extends State<HomePage> {
                   )
                 
                 )
-              ],)
+              ],)*/
+                ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: finalFeed.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: ElevatedButton(onPressed: () => {_launchUrl(Uri.parse(finalFeed[index]["link"]))}, style: ElevatedButton.styleFrom(foregroundColor: Colors.black, shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(10.0),
+                      topLeft: Radius.circular(10.0),
+                      bottomLeft: Radius.circular(10.0),
+                      bottomRight: Radius.circular(10.0),
+                      ),
+                    ),), child: 
+                      Padding(padding: const EdgeInsets.only(top: 5.0, bottom: 5.0), child: 
+                        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text(finalFeed[index]["title"], style: const TextStyle(fontSize: 18.0), textAlign: TextAlign.left),
+                          Text("${finalFeed[index]['newspaper']} | Date : ${finalFeed[index]['localDate'].toString().split(".000")[0]}"),
+                          Padding(padding: const EdgeInsets.only(top: 5.0, bottom: 5.0), child: 
+                            CachedNetworkImage(
+                              imageUrl: finalFeed[index]["image"],
+                              placeholder: (context, url) => CircularProgressIndicator(),
+                              errorWidget: (context, url, error) => Icon(Icons.error),
+                            ),
+                          ),
+                          Text(finalFeed[index]["description"]),
+                        ])
+                      )
+                      
+                    )
+                    );
+                  }
+                )
             ])
           )
         )
@@ -162,8 +200,8 @@ Future<List<dynamic>> makeRTS() async {
         interestsIDs = [0];
       } else if(link.contains("/info/monde/")) interestsIDs = [1];
       else if(link.contains("/info/economie/")) interestsIDs = [2];
-      else if(link.contains("/fr/news/tech/")) interestsIDs = [3, 4];
-      else if(link.contains("/fr/sport/")) interestsIDs = [5];
+      else if(link.contains("/info/sciences-tech/")) interestsIDs = [3, 4];
+      else if(link.contains("/sport/")) interestsIDs = [5];
       else if(link.contains("/info/regions/geneve/")) interestsIDs = [6];
       else if(link.contains("/info/regions/vaud/")) interestsIDs = [7];
       else if(link.contains("/info/regions/fribourg/")) interestsIDs = [8];
@@ -204,13 +242,11 @@ Future<List<dynamic>> makeBlick() async {
       var image = channel.items[i].description!.split("src=\"")[1].split("\" />")[0];
       var link = channel.items[i].link!;
       var interestsIDs = [];
-      if(link.contains("/fr/news/suisse/")) {
-        interestsIDs = [0];
-      } else if(link.contains("/fr/news/monde/") || link.contains("/fr/news/france/")) interestsIDs = [1];
+      if(link.contains("/fr/news/suisse/"))interestsIDs = [0]; 
+      else if(link.contains("/fr/news/monde/") || link.contains("/fr/news/france/")) interestsIDs = [1];
       else if(link.contains("/fr/news/economie/")) interestsIDs = [2];
-      else if(link.contains("/info/sciences-tech/")) interestsIDs = [3];
-      else if(link.contains("/info/sciences-tech/")) interestsIDs = [4];
-      else if(link.contains("/sport/")) interestsIDs = [5];
+      else if(link.contains("/fr/news/tech/")) interestsIDs = [3, 4];
+      else if(link.contains("/fr/sport/")) interestsIDs = [5];
       else if(link.contains("/fr/pop-culture/")) interestsIDs = [13];
       else if(link.contains("/fr/news/opinion/")) interestsIDs = [14];
       else if(link.contains("/fr/life/")) interestsIDs = [15];
