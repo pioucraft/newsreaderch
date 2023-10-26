@@ -9,7 +9,7 @@ void main() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   String? inputString = prefs.getString("interests");
   final showLanguageSelection = inputString == null;
-  runApp(MyApp(condition: showLanguageSelection ?? false));
+  runApp(MyApp(condition: showLanguageSelection));
 }
 
 class MyApp extends StatelessWidget {

@@ -78,8 +78,8 @@ class _HomePageState extends State<HomePage> {
       }
     }
     setState(() {
-      isRSSLoaded = true; 
       finalFeed = sortListByMilliDate(finalFeed)!;
+      isRSSLoaded = true; 
     });
   }
 
@@ -89,84 +89,69 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text("Swiss News Reader"),
       ),
-      body: Center(child:
-        SingleChildScrollView(child:
-          Padding(padding: const EdgeInsets.only(top: 20.0, bottom: 18.0), child: 
-            Column(children: [
-              Padding(padding: const EdgeInsets.all(16.0), child: 
-                Text(jsonData["welcome"][language]!, style: const TextStyle(fontSize: 20.0), textAlign: TextAlign.center)
-              ),
-              if(isRSSLoaded) /*Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                for(var item in finalFeed) Padding(padding: const EdgeInsets.all(16.0),child: 
-                  ElevatedButton(onPressed: () => {_launchUrl(Uri.parse(item["link"]))}, style: ElevatedButton.styleFrom(foregroundColor: Colors.black, shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(10.0),
-                    topLeft: Radius.circular(10.0),
-                    bottomLeft: Radius.circular(10.0),
-                    bottomRight: Radius.circular(10.0),
-                  ),
-                  ),), child: 
-                    Padding(padding: const EdgeInsets.only(top: 5.0, bottom: 5.0), child: 
-                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(item["title"], style: const TextStyle(fontSize: 18.0), textAlign: TextAlign.left),
-                        Text("${item['newspaper']} | Date : ${item['localDate'].toString().split(".000")[0]}"),
-                        Padding(padding: const EdgeInsets.only(top: 5.0, bottom: 5.0), child: 
-                          CachedNetworkImage(
-                              imageUrl: item["image"],
-                              placeholder: (context, url) => CircularProgressIndicator(),
-                              errorWidget: (context, url, error) => Icon(Icons.error),
-                            )
-                        ),
-                        Text(item["description"]),
-                      ])
-                    ,)
-                    
-                  )
-                
-                )
-              ],)*/
-                ListView.builder(
+      body: Center(
+        child: Column(
+          children: [
+            if (isRSSLoaded)
+              Expanded(
+                child: ListView.builder(
                   shrinkWrap: true,
                   itemCount: finalFeed.length,
                   itemBuilder: (context, index) {
                     return ListTile(
-                      title: ElevatedButton(onPressed: () => {_launchUrl(Uri.parse(finalFeed[index]["link"]))}, style: ElevatedButton.styleFrom(foregroundColor: Colors.black, shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                      topRight: Radius.circular(10.0),
-                      topLeft: Radius.circular(10.0),
-                      bottomLeft: Radius.circular(10.0),
-                      bottomRight: Radius.circular(10.0),
-                      ),
-                    ),), child: 
-                      Padding(padding: const EdgeInsets.only(top: 5.0, bottom: 5.0), child: 
-                        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(finalFeed[index]["title"], style: const TextStyle(fontSize: 18.0), textAlign: TextAlign.left),
-                          Text("${finalFeed[index]['newspaper']} | Date : ${finalFeed[index]['localDate'].toString().split(".000")[0]}"),
-                          Padding(padding: const EdgeInsets.only(top: 5.0, bottom: 5.0), child: 
-                            CachedNetworkImage(
-                              imageUrl: finalFeed[index]["image"],
-                              placeholder: (context, url) => CircularProgressIndicator(),
-                              errorWidget: (context, url, error) => Icon(Icons.error),
+                      title: ElevatedButton(
+                        onPressed: () {
+                          _launchUrl(Uri.parse(finalFeed[index]["link"]));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.black,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                              topRight: Radius.circular(10.0),
+                              topLeft: Radius.circular(10.0),
+                              bottomLeft: Radius.circular(10.0),
+                              bottomRight: Radius.circular(10.0),
                             ),
                           ),
-                          Text(finalFeed[index]["description"]),
-                        ])
-                      )
-                      
-                    )
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                finalFeed[index]["title"],
+                                style: const TextStyle(fontSize: 18.0),
+                                textAlign: TextAlign.left,
+                              ),
+                              Text(
+                                "${finalFeed[index]['newspaper']} | Date : ${finalFeed[index]['localDate'].toString().split(".000")[0]}",
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
+                                child: CachedNetworkImage(
+                                  imageUrl: finalFeed[index]["image"],
+                                  placeholder: (context, url) => CircularProgressIndicator(),
+                                  errorWidget: (context, url, error) => Icon(Icons.error),
+                                ),
+                              ),
+                              Text(finalFeed[index]["description"]),
+                            ],
+                          ),
+                        ),
+                      ),
                     );
-                  }
-                )
-            ])
-          )
-        )
-      )
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -271,6 +256,7 @@ Future<List<dynamic>> makeBlick() async {
 
 Future<List<dynamic>> makeTdg(List<bool> interests) async {
   final client = http.Client();
+  var alreadyArticles = [];
   List<dynamic> returnStatement = [];
   List<Map> urlsTdg = [{"interests": [0], "url": "https://partner-feeds.publishing.tamedia.ch/rss/tdg/suisse"}, {"interests": [1], "url": "https://partner-feeds.publishing.tamedia.ch/rss/tdg/monde"}, {"interests": [2], "url": "https://partner-feeds.publishing.tamedia.ch/rss/tdg/economie"}, {"interests": [3], "url": "https://partner-feeds.publishing.tamedia.ch/rss/tdg/savoirs/sciences"}, {"interests": [4], "url": "https://partner-feeds.publishing.tamedia.ch/rss/tdg/savoirs/technologie"}, {"interests": [5], "url": "https://partner-feeds.publishing.tamedia.ch/rss/tdg/sports"}, {"interests": [6], "url": "https://partner-feeds.publishing.tamedia.ch/rss/tdg/geneve"}, {"interests": [13], "url": "https://partner-feeds.publishing.tamedia.ch/rss/tdg/culture"}, {"interests": [14], "url": "https://partner-feeds.publishing.tamedia.ch/rss/tdg/opinion"}, {"interests": [16], "url": "https://partner-feeds.publishing.tamedia.ch/rss/tdg/gastronomie"}];
   for(var urlTdg in urlsTdg) {
@@ -294,7 +280,11 @@ Future<List<dynamic>> makeTdg(List<bool> interests) async {
             // Convert the GMT date to local date
             DateTime parsedDate= gmtDate.toLocal();
             int millisecondsSinceEpoch = parsedDate.millisecondsSinceEpoch;
-            returnStatement.add({"title": title, "newspaper": newspaper,"description": description, "image": image, "link": link, "interestsIDs": interestsIDs, "localDate": parsedDate, "milliDate": millisecondsSinceEpoch}); 
+            if(!alreadyArticles.contains(link)) {
+              returnStatement.add({"title": title, "newspaper": newspaper,"description": description, "image": image, "link": link, "interestsIDs": interestsIDs, "localDate": parsedDate, "milliDate": millisecondsSinceEpoch}); 
+              alreadyArticles.add(link);
+            }
+            
           }
           catch(err) {
             print(err);
