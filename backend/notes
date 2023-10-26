@@ -1,1 +1,0 @@
-CREATE TABLE articles(title TEXT, newspaper TEXT, publishedDate TEXT, link TEXT);
