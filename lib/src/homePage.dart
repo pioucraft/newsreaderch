@@ -57,29 +57,66 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> makeRSS() async {
-    List<dynamic> rtsFeed = await makeRTS();
-    List<dynamic> blickFeed = await makeBlick();
-    List<dynamic> tdgFeed = await makeTdg(interests!);
-    var temporaryFinalFeed = rtsFeed;
-    temporaryFinalFeed.addAll(blickFeed);
-    temporaryFinalFeed.addAll(tdgFeed);
-
-
-    for(var item in temporaryFinalFeed) {
+    List<dynamic> rtsFeed = [];
+    for(var item in (await makeRTS())) {
       if(item["interestsIDs"].toString() == "[]") {
-        finalFeed.add(item);
+        rtsFeed.add(item);
       }
       for(var interest in item["interestsIDs"]) {
         if(interests![interest] == true) {
-          if(finalFeed.contains(item) == false) {
-            finalFeed.add(item);
+          if(rtsFeed.contains(item) == false) {
+            rtsFeed.add(item);
+          }
+        }
+      }
+    }
+    var temporaryFinalFeed = rtsFeed;
+    setState(() {
+      isRSSLoaded = true; 
+      finalFeed = sortListByMilliDate(temporaryFinalFeed)!;
+      
+    });
+    
+    List<dynamic> blickFeed = [];
+    for(var item in (await makeBlick())) {
+      if(item["interestsIDs"].toString() == "[]") {
+        blickFeed.add(item);
+      }
+      for(var interest in item["interestsIDs"]) {
+        if(interests![interest] == true) {
+          if(blickFeed.contains(item) == false) {
+            blickFeed.add(item);
           }
         }
       }
     }
     setState(() {
-      finalFeed = sortListByMilliDate(finalFeed)!;
       isRSSLoaded = true; 
+      finalFeed = sortListByMilliDate(temporaryFinalFeed)!;
+      
+    });
+    temporaryFinalFeed.addAll(blickFeed);
+    List<dynamic> tdgFeed = await makeTdg(interests!);
+    temporaryFinalFeed.addAll(tdgFeed);
+    setState(() {
+      isRSSLoaded = true; 
+      finalFeed = sortListByMilliDate(temporaryFinalFeed)!;
+      
+    });
+    List<dynamic> heures24Feed = await make24Heures(interests!);
+    temporaryFinalFeed.addAll(heures24Feed);
+    setState(() {
+      isRSSLoaded = true; 
+      finalFeed = sortListByMilliDate(temporaryFinalFeed)!;
+      
+    });
+    List<dynamic> leMatinFeed = await makeLeMatin(interests!);
+    temporaryFinalFeed.addAll(leMatinFeed);
+
+    setState(() {
+      isRSSLoaded = true; 
+      finalFeed = sortListByMilliDate(finalFeed)!;
+      
     });
   }
 
@@ -276,6 +313,99 @@ Future<List<dynamic>> makeTdg(List<bool> interests) async {
             //all the things about date
             var pubdate = channel.items[j].pubDate!;
             DateTime gmtDate = DateTime.parse(pubdate);
+
+            // Convert the GMT date to local date
+            DateTime parsedDate= gmtDate.toLocal();
+            int millisecondsSinceEpoch = parsedDate.millisecondsSinceEpoch;
+            if(!alreadyArticles.contains(link)) {
+              returnStatement.add({"title": title, "newspaper": newspaper,"description": description, "image": image, "link": link, "interestsIDs": interestsIDs, "localDate": parsedDate, "milliDate": millisecondsSinceEpoch}); 
+              alreadyArticles.add(link);
+            }
+            
+          }
+          catch(err) {
+            print(err);
+          }
+        }
+      }
+      catch(err) {
+        print(err);
+      }
+    }
+    
+  }
+  return returnStatement;
+}
+
+Future<List<dynamic>> make24Heures(List<bool> interests) async {
+  final client = http.Client();
+  var alreadyArticles = [];
+  List<dynamic> returnStatement = [];
+  List<Map> urls24Heures = [{"interests": [0], "url": "https://partner-feeds.publishing.tamedia.ch/rss/24heures/suisse"}, {"interests": [1], "url": "https://partner-feeds.publishing.tamedia.ch/rss/24heures/monde"}, {"interests": [2], "url": "https://partner-feeds.publishing.tamedia.ch/rss/24heures/economie"}, {"interests": [3], "url": "https://partner-feeds.publishing.tamedia.ch/rss/24heures/savoirs/sciences"}, {"interests": [4], "url": "https://partner-feeds.publishing.tamedia.ch/rss/24heures/savoirs/technologie"}, {"interests": [5], "url": "https://partner-feeds.publishing.tamedia.ch/rss/24heures/sports"}, {"interests": [7], "url": "https://partner-feeds.publishing.tamedia.ch/rss/24heures/vaud-regions/"}, {"interests": [13], "url": "https://partner-feeds.publishing.tamedia.ch/rss/24heures/culture"}, {"interests": [14], "url": "https://partner-feeds.publishing.tamedia.ch/rss/24heures/opinion"}, {"interests": [16], "url": "https://partner-feeds.publishing.tamedia.ch/rss/24heures/gastronomie"}];
+  for(var url24Heures in urls24Heures) {
+    if(interests[url24Heures["interests"][0]] == true) {
+      var response = await client.get(Uri.parse(url24Heures["url"]));
+      var channel = RssFeed.parse(response.body);
+      try {
+        for(var j = 0; j < channel.items.length; j++) {
+          try {
+            var newspaper = "24 Heures";
+            var title = channel.items[j].title!;
+            var description = channel.items[j].description!;
+            var image = channel.items[j].enclosure!.url!.split("?")[0];
+            var link = channel.items[j].link!;
+            var interestsIDs = [];
+
+            //all the things about date
+            var pubdate = channel.items[j].pubDate!;
+            DateTime gmtDate = DateTime.parse(pubdate);
+
+            // Convert the GMT date to local date
+            DateTime parsedDate= gmtDate.toLocal();
+            int millisecondsSinceEpoch = parsedDate.millisecondsSinceEpoch;
+            if(!alreadyArticles.contains(link)) {
+              returnStatement.add({"title": title, "newspaper": newspaper,"description": description, "image": image, "link": link, "interestsIDs": interestsIDs, "localDate": parsedDate, "milliDate": millisecondsSinceEpoch}); 
+              alreadyArticles.add(link);
+            }
+            
+          }
+          catch(err) {
+            print(err);
+          }
+        }
+      }
+      catch(err) {
+        print(err);
+      }
+    }
+    
+  }
+  return returnStatement;
+}
+
+Future<List<dynamic>> makeLeMatin(List<bool> interests) async {
+  final client = http.Client();
+  var alreadyArticles = [];
+  List<dynamic> returnStatement = [];
+  List<Map> urlsLeMatin = [{"interests": [0], "url": "https://partner-feeds.lematin.ch/rss/lematin/suisse"}, {"interests": [1], "url": "https://partner-feeds.lematin.ch/rss/lematin/monde"}, {"interests": [2], "url": "https://partner-feeds.lematin.ch/rss/lematin/economie"}, {"interests": [4], "url": "https://partner-feeds.lematin.ch/rss/lematin/hightech"}, {"interests": [5], "url": "https://partner-feeds.lematin.ch/rss/lematin/sports"}, {"interests": [16], "url": "https://partner-feeds.lematin.ch/rss/lematin/bienmanger"}];
+  for(var urlLeMatin in urlsLeMatin) {
+    if(interests[urlLeMatin["interests"][0]] == true) {
+      var response = await client.get(Uri.parse(urlLeMatin["url"]));
+      var channel = RssFeed.parse(response.body);
+      try {
+        print(urlLeMatin["url"]);
+        for(var j = 0; j < channel.items.length; j++) {
+          try {
+            var newspaper = "Le Matin";
+            var title = channel.items[j].title!;
+            var description = channel.items[j].description!;
+            var image = channel.items[j].enclosure!.url!.split("?")[0];
+            var link = channel.items[j].link!;
+            var interestsIDs = [];
+
+            //all the things about date
+            var pubdate = channel.items[j].pubDate!;
+            DateTime gmtDate = HttpDate.parse(pubdate);
 
             // Convert the GMT date to local date
             DateTime parsedDate= gmtDate.toLocal();
