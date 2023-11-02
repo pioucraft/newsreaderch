@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
+import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -90,12 +91,36 @@ class _HomePageState extends State<HomePage> {
         }
       }
     }
+    temporaryFinalFeed.addAll(blickFeed);
     setState(() {
       isRSSLoaded = true; 
       finalFeed = sortListByMilliDate(temporaryFinalFeed)!;
       
     });
-    temporaryFinalFeed.addAll(blickFeed);
+    
+
+    List<dynamic> leTempsFeed = [];
+    for(var item in (await makeLeTemps(interests!))) {
+      if(item["interestsIDs"].toString() == "[]") {
+        leTempsFeed.add(item);
+      }
+      for(var interest in item["interestsIDs"]) {
+        if(interests![interest] == true) {
+          if(leTempsFeed.contains(item) == false) {
+            leTempsFeed.add(item);
+          }
+        }
+      }
+    }
+    temporaryFinalFeed.addAll(leTempsFeed);
+    setState(() {
+      isRSSLoaded = true; 
+      finalFeed = sortListByMilliDate(temporaryFinalFeed)!;
+      
+    });
+    
+
+
     List<dynamic> tdgFeed = await makeTdg(interests!);
     temporaryFinalFeed.addAll(tdgFeed);
     setState(() {
@@ -115,7 +140,15 @@ class _HomePageState extends State<HomePage> {
 
     setState(() {
       isRSSLoaded = true; 
-      finalFeed = sortListByMilliDate(finalFeed)!;
+      finalFeed = sortListByMilliDate(temporaryFinalFeed)!;
+      
+    });
+    List<dynamic> minutes20Feed = await make20Minutes(interests!);
+    temporaryFinalFeed.addAll(minutes20Feed);
+
+    setState(() {
+      isRSSLoaded = true; 
+      finalFeed = sortListByMilliDate(temporaryFinalFeed)!;
       
     });
   }
@@ -291,6 +324,52 @@ Future<List<dynamic>> makeBlick() async {
   return returnStatement;
 }
 
+Future<List<dynamic>> makeLeTemps(List<bool> interests) async {
+  final client = http.Client();
+  var alreadyArticles = [];
+  List<dynamic> returnStatement = [];
+  List<Map> urlsLeTemps = [{"interests": [0], "url": "https://www.letemps.ch/suisse.rss"}, {"interests": [1], "url": "https://www.letemps.ch/monde.rss"}, {"interests": [2], "url": "https://www.letemps.ch/economie.rss"}, {"interests": [3], "url": "https://www.letemps.ch/sciences.rss"}, {"interests": [5], "url": "https://www.letemps.ch/sport.rss"}, {"interests": [15], "url": "https://www.letemps.ch/culture.rss"}, {"interests": [16], "url": "https://www.letemps.ch/opinions.rss"}];
+  for(var urlLeTemps in urlsLeTemps) {
+    if(interests[urlLeTemps["interests"][0]] == true) {
+      var response = await client.get(Uri.parse(urlLeTemps["url"]));
+      var channel = RssFeed.parse(response.body);
+      try {
+        for(var j = 0; j < channel.items.length; j++) {
+          try {
+            var newspaper = "Le Temps";
+            var title = channel.items[j].title!;
+            var description = channel.items[j].description!.split("<p>")[1].split("</p>")[0];
+            var image = channel.items[j].description!.split("src=\"")[1].split("\"")[0];
+            var link = channel.items[j].link!;
+            var interestsIDs = [];
+
+            //all the things about date
+            var pubdate = channel.items[j].pubDate!;
+            DateTime gmtDate = DateFormat("E, d MMM y H:m:s Z").parse(pubdate);
+
+            // Convert the GMT date to local date
+            DateTime parsedDate = gmtDate.toLocal();
+            int millisecondsSinceEpoch = parsedDate.millisecondsSinceEpoch;
+            if(!alreadyArticles.contains(link)) {
+              returnStatement.add({"title": title, "newspaper": newspaper,"description": description, "image": image, "link": link, "interestsIDs": interestsIDs, "localDate": parsedDate, "milliDate": millisecondsSinceEpoch}); 
+              alreadyArticles.add(link);
+            }
+            
+          }
+          catch(err) {
+            print(err);
+          }
+        }
+      }
+      catch(err) {
+        print(err);
+      }
+    }
+    
+  }
+  return returnStatement;
+}
+
 Future<List<dynamic>> makeTdg(List<bool> interests) async {
   final client = http.Client();
   var alreadyArticles = [];
@@ -393,10 +472,56 @@ Future<List<dynamic>> makeLeMatin(List<bool> interests) async {
       var response = await client.get(Uri.parse(urlLeMatin["url"]));
       var channel = RssFeed.parse(response.body);
       try {
-        print(urlLeMatin["url"]);
         for(var j = 0; j < channel.items.length; j++) {
           try {
             var newspaper = "Le Matin";
+            var title = channel.items[j].title!;
+            var description = channel.items[j].description!;
+            var image = channel.items[j].enclosure!.url!.split("?")[0];
+            var link = channel.items[j].link!;
+            var interestsIDs = [];
+
+            //all the things about date
+            var pubdate = channel.items[j].pubDate!;
+            DateTime gmtDate = HttpDate.parse(pubdate);
+
+            // Convert the GMT date to local date
+            DateTime parsedDate= gmtDate.toLocal();
+            int millisecondsSinceEpoch = parsedDate.millisecondsSinceEpoch;
+            if(!alreadyArticles.contains(link)) {
+              returnStatement.add({"title": title, "newspaper": newspaper,"description": description, "image": image, "link": link, "interestsIDs": interestsIDs, "localDate": parsedDate, "milliDate": millisecondsSinceEpoch}); 
+              alreadyArticles.add(link);
+            }
+            
+          }
+          catch(err) {
+            print(err);
+          }
+        }
+      }
+      catch(err) {
+        print(err);
+      }
+    }
+    
+  }
+  return returnStatement;
+}
+
+Future<List<dynamic>> make20Minutes(List<bool> interests) async {
+  final client = http.Client();
+  var alreadyArticles = [];
+  List<dynamic> returnStatement = [];
+  List<Map> urls20Minutes = [{"interests": [0], "url": "https://partner-feeds.20min.ch/rss/20minutes/suisse"}, {"interests": [1], "url": "https://partner-feeds.20min.ch/rss/20minutes/monde"}, {"interests": [2], "url": "https://partner-feeds.20min.ch/rss/20minutes/economie"}, {"interests": [3], "url": "https://partner-feeds.20min.ch/rss/20minutes/science-et-nature"}, {"interests": [4], "url": "https://partner-feeds.20min.ch/rss/20minutes/hi-tech"}, {"interests": [5], "url": "https://partner-feeds.20min.ch/rss/20minutes/sports"}, {"interests": [16], "url": "https://partner-feeds.20min.ch/rss/20minutes/cuisiner"}];
+  for(var url20Minutes in urls20Minutes) {
+    if(interests[url20Minutes["interests"][0]] == true) {
+      var response = await client.get(Uri.parse(url20Minutes["url"]));
+      var channel = RssFeed.parse(response.body);
+      print(url20Minutes["interests"]);
+      try {
+        for(var j = 0; j < channel.items.length; j++) {
+          try {
+            var newspaper = "20 Minutes";
             var title = channel.items[j].title!;
             var description = channel.items[j].description!;
             var image = channel.items[j].enclosure!.url!.split("?")[0];
